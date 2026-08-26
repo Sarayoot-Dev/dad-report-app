@@ -14,7 +14,7 @@ from openpyxl.chart.series import SeriesLabel
 # ── Page Config ───────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title='DAD Report — Valeo NB2',
-    page_icon='icon.png',
+    page_icon='🏭',
     layout='wide',
     initial_sidebar_state='expanded',
 )
@@ -45,20 +45,20 @@ st.markdown("""
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 ALL_CH = [
-    ('CH001','Top1 (Zone 1)',      '°C'),
-    ('CH002','Top2 (Zone 2)',      '°C'),
-    ('CH003','Top3 (Zone 3)',      '°C'),
-    ('CH004','Top4 (Zone 4)',      '°C'),
-    ('CH005','Top5 (Zone 5)',      '°C'),
-    ('CH006','Top6 (Zone 6)',      '°C'),
-    ('CH007','Top7 (Zone 7)',      '°C'),
-    ('CH008','Bottom 1 (Zone 8)', '°C'),
-    ('CH009','Bottom 2 (Zone 9)', '°C'),
-    ('CH010','Bottom 3 (Zone 10)','°C'),
-    ('CH011','Bottom 4 (Zone 11)','°C'),
-    ('CH012','Bottom 5 (Zone 12)','°C'),
-    ('CH013','Bottom 6 (Zone 13)','°C'),
-    ('CH014','Bottom 7 (Zone 14)','°C'),
+    ('CH001','Top1 (Z1)',      '°C'),
+    ('CH002','Top2 (Z2)',      '°C'),
+    ('CH003','Top3 (Z3)',      '°C'),
+    ('CH004','Top4 (Z4)',      '°C'),
+    ('CH005','Top5 (Z5)',      '°C'),
+    ('CH006','Top6 (Z6)',      '°C'),
+    ('CH007','Top7 (Z7)',      '°C'),
+    ('CH008','Bot1 (Z8)', '°C'),
+    ('CH009','Bot2 (Z9)', '°C'),
+    ('CH010','Bot3 (Z10)','°C'),
+    ('CH011','Bot4 (Z11)','°C'),
+    ('CH012','Bot5 (Z12)','°C'),
+    ('CH013','Bot6 (Z13)','°C'),
+    ('CH014','Bot7 (Z14)','°C'),
     ('CH015','O2 Exit',           'ppm'),
     ('CH016','Dryer zone1',       '°C'),
     ('CH017','Dryer zone2',       '°C'),
