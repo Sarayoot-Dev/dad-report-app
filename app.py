@@ -537,6 +537,60 @@ st.markdown('<div style="margin-top:16px"></div>', unsafe_allow_html=True)
 
 # ── Coverage Check ────────────────────────────────────────────────────────────
 with st.expander('📋 ตรวจสอบความครบถ้วนของข้อมูล', expanded=(len(data)==0)):
+
+    # ── แสดงรายละเอียดไฟล์ที่ upload ────────────────────────────────────────
+    st.markdown('**📂 ไฟล์ที่ Upload มา:**')
+    import re as _re
+    DAD_PAT = _re.compile(r'DATA(\d{2})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})\.DAD$', _re.IGNORECASE)
+    file_ranges = []
+    for fname, raw in files_data:
+        m = DAD_PAT.search(fname)
+        if m:
+            yy,mm,dd,hh,mn,sc = m.groups()
+            file_start = datetime(2000+int(yy),int(mm),int(dd),int(hh),int(mn),int(sc))
+            file_end   = file_start + timedelta(hours=6)
+            file_ranges.append((fname, file_start, file_end))
+            st.markdown(
+                f'<div style="background:#F0F4F8;border-radius:6px;padding:6px 12px;margin-bottom:4px;font-size:13px">'
+                f'📄 <b>{fname}</b><br>'
+                f'&nbsp;&nbsp;&nbsp;⏱️ {file_start.strftime("%d/%m/%Y %H:%M")} → {file_end.strftime("%d/%m/%Y %H:%M")}'
+                f'</div>',
+                unsafe_allow_html=True
+            )
+        else:
+            st.markdown(f'<div style="background:#F0F4F8;border-radius:6px;padding:6px 12px;margin-bottom:4px;font-size:13px">📄 <b>{fname}</b></div>', unsafe_allow_html=True)
+
+    st.markdown('<div style="margin-top:10px"></div>', unsafe_allow_html=True)
+
+    # ── แสดงช่วงเวลาที่เลือก vs ข้อมูลที่มี ─────────────────────────────────
+    if file_ranges:
+        all_start = min(s for _,s,_ in file_ranges)
+        all_end   = max(e for _,_,e in file_ranges)
+        st.markdown(
+            f'<div class="warn-box">📅 ข้อมูลที่มีทั้งหมด: '
+            f'<b>{all_start.strftime("%d/%m/%Y %H:%M")}</b> → '
+            f'<b>{all_end.strftime("%d/%m/%Y %H:%M")}</b></div>',
+            unsafe_allow_html=True
+        )
+        st.markdown('<div style="margin-top:6px"></div>', unsafe_allow_html=True)
+
+        # เช็คว่าช่วงที่เลือกอยู่ในข้อมูลที่มีมั้ย
+        if dt_start < all_start:
+            st.markdown(
+                f'<div class="err-box">⚠️ เวลาเริ่มต้นที่เลือก <b>{dt_start.strftime("%d/%m/%Y %H:%M")}</b> '
+                f'เร็วกว่าข้อมูลที่มี ({all_start.strftime("%d/%m/%Y %H:%M")}) — กรุณา upload ไฟล์เพิ่มครับ</div>',
+                unsafe_allow_html=True
+            )
+        if dt_end > all_end:
+            st.markdown(
+                f'<div class="err-box">⚠️ เวลาสิ้นสุดที่เลือก <b>{dt_end.strftime("%d/%m/%Y %H:%M")}</b> '
+                f'เกินข้อมูลที่มี ({all_end.strftime("%d/%m/%Y %H:%M")}) — กรุณา upload ไฟล์เพิ่มครับ</div>',
+                unsafe_allow_html=True
+            )
+
+    st.markdown('---')
+    st.markdown('**📊 ข้อมูลในช่วงที่เลือก:**')
+
     day_counts = defaultdict(int)
     for r in data:
         day_counts[r['ts'].strftime('%Y/%m/%d')] += 1
