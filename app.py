@@ -511,11 +511,14 @@ def load_data(files_data, dt_s, dt_e):
     return unique
 
 def apply_mode(records, mode_key):
-    """Set rec[ch] ตาม mode ที่เลือก (min/avg/max)"""
+    """Return new list with rec[ch] set ตาม mode ที่เลือก (min/avg/max)"""
+    result = []
     for r in records:
+        new_r = dict(r)  # copy เพื่อไม่กระทบ cache
         for ch,_,_ in ALL_CH:
-            r[ch] = r.get(f'{ch}{mode_key}')
-    return records
+            new_r[ch] = r.get(f'{ch}{mode_key}')
+        result.append(new_r)
+    return result
 
 files_data = [(f.name, f.read()) for f in uploaded]
 data = load_data(tuple((n,d) for n,d in files_data), dt_start, dt_end)
