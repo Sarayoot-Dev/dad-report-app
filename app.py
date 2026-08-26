@@ -14,7 +14,7 @@ from openpyxl.chart.series import SeriesLabel
 # ── Page Config ───────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title='DAD Report — Valeo NB2',
-    page_icon='🏭',
+    page_icon='icon.png',
     layout='wide',
     initial_sidebar_state='expanded',
 )
