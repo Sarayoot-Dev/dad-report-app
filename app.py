@@ -495,7 +495,7 @@ if dt_end <= dt_start:
 
 # Parse & Filter
 @st.cache_data(show_spinner='⏳ กำลัง parse ไฟล์...')
-def load_data(files_data, dt_s, dt_e):
+def load_data(files_data, dt_s, dt_e, mode_key):
     all_records = []
     for fname, raw in files_data:
         recs = parse_dad(raw)
@@ -507,22 +507,16 @@ def load_data(files_data, dt_s, dt_e):
     for r in all_records:
         k = r['ts']
         if k not in seen:
-            seen.add(k); unique.append(r)
+            seen.add(k)
+            # set rec[ch] ตาม mode ที่เลือกก่อน cache
+            new_r = dict(r)
+            for ch,_,_ in ALL_CH:
+                new_r[ch] = r.get(f'{ch}{mode_key}')
+            unique.append(new_r)
     return unique
 
-def apply_mode(records, mode_key):
-    """Return new list with rec[ch] set ตาม mode ที่เลือก (min/avg/max)"""
-    result = []
-    for r in records:
-        new_r = dict(r)  # copy เพื่อไม่กระทบ cache
-        for ch,_,_ in ALL_CH:
-            new_r[ch] = r.get(f'{ch}{mode_key}')
-        result.append(new_r)
-    return result
-
 files_data = [(f.name, f.read()) for f in uploaded]
-data = load_data(tuple((n,d) for n,d in files_data), dt_start, dt_end)
-data = apply_mode(data, mode_key)
+data = load_data(tuple((n,d) for n,d in files_data), dt_start, dt_end, mode_key)
 
 # ── Summary Cards ──────────────────────────────────────────────────────────────
 duration = dt_end - dt_start
