@@ -344,12 +344,25 @@ with st.sidebar:
 
     with st.expander('🌡️ Top Zones', expanded=True):
         col_a, col_b = st.columns(2)
-        with col_a:
-            sel_top = st.multiselect('', all_names_top, default=all_names_top, label_visibility='collapsed')
+        sel_top = []
+        for i, name in enumerate(all_names_top):
+            col = col_a if i % 2 == 0 else col_b
+            if col.checkbox(name, value=True, key=f'top_{i}'):
+                sel_top.append(name)
     with st.expander('🌡️ Bottom Zones', expanded=True):
-        sel_bot = st.multiselect('', all_names_bot, default=all_names_bot, label_visibility='collapsed')
+        col_a, col_b = st.columns(2)
+        sel_bot = []
+        for i, name in enumerate(all_names_bot):
+            col = col_a if i % 2 == 0 else col_b
+            if col.checkbox(name, value=True, key=f'bot_{i}'):
+                sel_bot.append(name)
     with st.expander('🫧 O2 & Dryer', expanded=True):
-        sel_o2 = st.multiselect('', all_names_o2, default=all_names_o2, label_visibility='collapsed')
+        col_a, col_b = st.columns(2)
+        sel_o2 = []
+        for i, name in enumerate(all_names_o2):
+            col = col_a if i % 2 == 0 else col_b
+            if col.checkbox(name, value=True, key=f'o2_{i}'):
+                sel_o2.append(name)
 
     st.markdown('---')
     st.markdown('### 🔀 เปรียบเทียบช่วงเวลา')
