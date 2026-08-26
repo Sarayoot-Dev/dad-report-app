@@ -373,14 +373,13 @@ def build_chart(data, zones_top, zones_bot, zones_o2, compare_ranges=None):
     )
     fig.update_xaxes(
         tickformat='%d/%m\n%H:%M',
-        dtick=2*3600*1000,
+        dtick=1*3600*1000,        # ทุก 1 ชั่วโมง
         gridcolor='rgba(200,200,200,0.25)',
         tickfont=dict(size=10),
+        showticklabels=True,      # แสดงทุก subplot
     )
     for r in range(1, n_rows+1):
         fig.update_yaxes(gridcolor='rgba(200,200,200,0.25)', row=r, col=1)
-        if r < n_rows:
-            fig.update_xaxes(showticklabels=False, row=r, col=1)
 
     return fig
 
