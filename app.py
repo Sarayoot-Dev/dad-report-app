@@ -87,8 +87,18 @@ def parse_dad(raw: bytes) -> list:
             continue
         rec = {'ts': ts}
         for ci,(ch,_,_) in enumerate(ALL_CH):
-            v = struct.unpack_from('>h', raw, base + ci*4)[0]
-            rec[ch] = round(v/10, 1) if v != -32767 else None
+            min_v = struct.unpack_from('>h', raw, base + ci*4)[0]
+            max_v = struct.unpack_from('>h', raw, base + ci*4 + 2)[0]
+            if min_v != -32767:
+                rec[f'{ch}_min'] = round(min_v/10, 1)
+                rec[f'{ch}_max'] = round(max_v/10, 1)
+                rec[f'{ch}_avg'] = round((min_v + max_v) / 20, 1)
+                rec[ch] = rec[f'{ch}_min']  # default
+            else:
+                rec[f'{ch}_min'] = None
+                rec[f'{ch}_max'] = None
+                rec[f'{ch}_avg'] = None
+                rec[ch] = None
         records.append(rec)
     return records
 
@@ -411,6 +421,17 @@ with st.sidebar:
     dt_end   = datetime.combine(d_end,   t_end)
 
     st.markdown('---')
+    st.markdown('### 📈 ค่าที่แสดงในกราฟ')
+    value_mode = st.radio(
+        '',
+        options=['MIN', 'AVG (เฉลี่ย)', 'MAX'],
+        index=0,
+        horizontal=True,
+        label_visibility='collapsed',
+    )
+    mode_key = {'MIN': '_min', 'AVG (เฉลี่ย)': '_avg', 'MAX': '_max'}[value_mode]
+
+    st.markdown('---')
     st.markdown('### 📊 เลือก Zone ที่อยากดู')
 
     all_names_top = [name for _,name,_ in ALL_CH[:7]]
@@ -489,8 +510,16 @@ def load_data(files_data, dt_s, dt_e):
             seen.add(k); unique.append(r)
     return unique
 
+def apply_mode(records, mode_key):
+    """Set rec[ch] ตาม mode ที่เลือก (min/avg/max)"""
+    for r in records:
+        for ch,_,_ in ALL_CH:
+            r[ch] = r.get(f'{ch}{mode_key}')
+    return records
+
 files_data = [(f.name, f.read()) for f in uploaded]
 data = load_data(tuple((n,d) for n,d in files_data), dt_start, dt_end)
+data = apply_mode(data, mode_key)
 
 # ── Summary Cards ──────────────────────────────────────────────────────────────
 duration = dt_end - dt_start
@@ -548,6 +577,7 @@ with tab_chart:
 
 with tab_summary:
     st.markdown(f'**ช่วงเวลา:** {dt_start.strftime("%d/%m/%Y %H:%M")} → {dt_end.strftime("%d/%m/%Y %H:%M")}')
+    st.markdown(f'**ค่าที่แสดง:** {value_mode}')
     st.markdown(f'**Records:** {len(data):,}')
     st.markdown('---')
 
