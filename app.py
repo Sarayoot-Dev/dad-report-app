@@ -207,6 +207,79 @@ def build_excel(data, dt_start, dt_end, zones_sel):
             if avg!='': c.number_format='0.0'
     for col,w in zip('ABCDE',[24,10,8,14,14]): ws3.column_dimensions[col].width=w
 
+
+    # ── Temperature Chart ─────────────────────────────────────────────────────
+    from openpyxl.chart import LineChart, Reference
+    from openpyxl.chart.series import SeriesLabel
+
+    COLORS_CHART = ['378ADD','D85A30','1D9E75','7F77DD','BA7517','D4537E','639922',
+                    '53B8E0','E2864A','2CB8A0','9F77CC','D0913A','A85090','5E9C20']
+    COLORS_O2C   = {'CH015':'2E75B6','CH016':'E36C09','CH017':'974706','CH018':'C55A11'}
+
+    n_data = len(data)
+    cats = Reference(ws, min_col=1, min_row=3, max_row=n_data+2)
+
+    def make_line_chart(title, ch_list, y_min, y_max, colors):
+        lc = LineChart(); lc.title = title; lc.style = 10
+        lc.y_axis.title = 'Temperature (°C)' if y_min > 0 else 'Value'
+        lc.y_axis.scaling.min = y_min; lc.y_axis.scaling.max = y_max
+        lc.height = 14; lc.width = 28
+        lc.legend.position = 'b'; lc.y_axis.numFmt = '0.0'
+        lc.x_axis.tickLblSkip = max(1, n_data // 24)
+        for i, (ch, name, unit) in enumerate(ch_list):
+            zi = next(j for j,(c,_,_) in enumerate(ALL_CH) if c==ch)
+            col_idx = 4 + next(j for j,(c,_,_) in enumerate(sel_ch) if c==ch)
+            ref = Reference(ws, min_col=col_idx, min_row=2, max_row=n_data+2)
+            lc.add_data(ref, titles_from_data=False)
+            lc.series[i].title = SeriesLabel(v=name)
+            lc.series[i].graphicalProperties.line.solidFill = colors[i % len(colors)]
+            lc.series[i].graphicalProperties.line.width = 12000
+            lc.series[i].smooth = True
+        lc.set_categories(cats)
+        return lc
+
+    # แยก channel ตาม group
+    top_sel  = [(ch,name,unit) for ch,name,unit in sel_ch if ch in [f'CH{i:03d}' for i in range(1,8)]]
+    bot_sel  = [(ch,name,unit) for ch,name,unit in sel_ch if ch in [f'CH{i:03d}' for i in range(8,15)]]
+    o2_sel   = [(ch,name,unit) for ch,name,unit in sel_ch if ch in ['CH015','CH016','CH017','CH018']]
+
+    ws_c = wb.create_sheet('Temperature Chart')
+    ws_c['A1'] = f'Temperature Timeline — {report_name}'
+    ws_c['A1'].font = Font(bold=True, name='Arial', size=13, color='1F4E79')
+
+    if top_sel:
+        lc_top = make_line_chart('Top Zones: Top1–Top7', top_sel, 570, 635,
+                                  [COLORS_CHART[i] for i in range(7)])
+        ws_c.add_chart(lc_top, 'A3')
+
+    if bot_sel:
+        lc_bot = make_line_chart('Bottom Zones: Bottom 1–7', bot_sel, 570, 635,
+                                  [COLORS_CHART[i] for i in range(7,14)])
+        ws_c.add_chart(lc_bot, 'A35')
+
+    if o2_sel:
+        ws_o = wb.create_sheet('O2 & Dryer Chart')
+        ws_o['A1'] = f'O2 & Dryer Timeline — {report_name}'
+        ws_o['A1'].font = Font(bold=True, name='Arial', size=13, color='1F4E79')
+
+        o2_only   = [(ch,n,u) for ch,n,u in o2_sel if ch in ('CH015','CH018')]
+        dryer_only= [(ch,n,u) for ch,n,u in o2_sel if ch in ('CH016','CH017')]
+
+        if o2_only:
+            lc_o2 = make_line_chart('O2 Exit vs O2 Entrance', o2_only, None, None,
+                                     [COLORS_O2C[ch] for ch,_,_ in o2_only])
+            lc_o2.y_axis.title = 'O2 Level (ppm)'
+            lc_o2.y_axis.scaling.min = None; lc_o2.y_axis.scaling.max = None
+            ws_o.add_chart(lc_o2, 'A3')
+
+        if dryer_only:
+            lc_dry = make_line_chart('Dryer zone1 vs zone2', dryer_only, None, None,
+                                      [COLORS_O2C[ch] for ch,_,_ in dryer_only])
+            lc_dry.y_axis.title = 'Temperature (°C)'
+            lc_dry.y_axis.scaling.min = None; lc_dry.y_axis.scaling.max = None
+            ws_o.add_chart(lc_dry, 'A35')
+
+
     buf = io.BytesIO()
     wb.save(buf)
     buf.seek(0)
