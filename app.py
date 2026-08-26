@@ -541,13 +541,18 @@ with st.expander('📋 ตรวจสอบความครบถ้วนข
     # ── แสดงรายละเอียดไฟล์ที่ upload ────────────────────────────────────────
     st.markdown('**📂 ไฟล์ที่ Upload มา:**')
     import re as _re
-    DAD_PAT = _re.compile(r'DATA(\d{2})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})\.DAD$', _re.IGNORECASE)
+    # รองรับทั้ง DATA260825_011950 และ DATA0260825_011950
+    DAD_PAT = _re.compile(r'DATA\d*?(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})\.DAD$', _re.IGNORECASE)
     file_ranges = []
     for fname, raw in files_data:
         m = DAD_PAT.search(fname)
         if m:
-            yy,mm,dd,hh,mn,sc = m.groups()
-            file_start = datetime(2000+int(yy),int(mm),int(dd),int(hh),int(mn),int(sc))
+            # groups: mmdd_hhmmss → mm,dd,hh,mn,sc
+            mm,dd,hh,mn,sc = m.groups()
+            # หาปีจากชื่อไฟล์ (DATA026 = 2026)
+            yr_m = _re.search(r'DATA0*(\d{2})\d{4}_', fname, _re.IGNORECASE)
+            yr = int(yr_m.group(1)) if yr_m else 26
+            file_start = datetime(2000+yr, int(mm), int(dd), int(hh), int(mn), int(sc))
             file_end   = file_start + timedelta(hours=6)
             file_ranges.append((fname, file_start, file_end))
             st.markdown(
