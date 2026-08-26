@@ -221,7 +221,7 @@ def build_excel(data, dt_start, dt_end, zones_sel):
 
     def make_line_chart(title, ch_list, y_min, y_max, colors):
         lc = LineChart(); lc.title = title; lc.style = 10
-        lc.y_axis.title = 'Temperature (°C)' if y_min > 0 else 'Value'
+        lc.y_axis.title = 'Temperature (°C)' if (y_min is not None and y_min > 0) else 'Value'
         lc.y_axis.scaling.min = y_min; lc.y_axis.scaling.max = y_max
         lc.height = 14; lc.width = 28
         lc.legend.position = 'b'; lc.y_axis.numFmt = '0.0'
